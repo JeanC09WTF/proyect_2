@@ -1,6 +1,6 @@
+import pytest
 from .base_test import BrowserStackTest
 from selenium.webdriver.common.keys import Keys
-import pytest
 
 class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
