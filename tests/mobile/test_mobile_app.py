@@ -15,45 +15,49 @@ class TestMobileApp(BrowserStackTest):
     def test_mobile_navigation(self, driver):
         """Prueba de navegación en dispositivo móvil"""
         try:
-            # Navegar a Wikipedia móvil
-            driver.get("https://m.wikipedia.org")
+            # 1. Navegar a Wikipedia móvil
+            driver.get("https://en.m.wikipedia.org")  # Usar versión en inglés
             self.take_screenshot(driver, "mobile_home")
             
-            # Selectores alternativos para el botón de menú
-            possible_selectors = [
-                (By.CSS_SELECTOR, "button.menu-toggle"),
-                (By.CSS_SELECTOR, ".mw-ui-icon.mw-ui-icon-element"),
+            # 2. Selectores actualizados para Wikipedia en inglés
+            menu_selectors = [
+                (By.CSS_SELECTOR, "#mw-mf-main-menu-button"),  # Selector actual
                 (By.CSS_SELECTOR, ".main-menu-button"),
-                (By.CSS_SELECTOR, ".menu-button")
+                (By.XPATH, "//button[contains(@class, 'menu')]")
             ]
             
-            # Intentar con cada selector hasta encontrar uno que funcione
-            for selector in possible_selectors:
+            # 3. Intentar abrir menú
+            menu_found = False
+            for by, selector in menu_selectors:
                 try:
-                    menu_button = WebDriverWait(driver, 5).until(
-                        EC.element_to_be_clickable(selector))
+                    menu_button = WebDriverWait(driver, 8).until(
+                        EC.element_to_be_clickable((by, selector)))
                     menu_button.click()
+                    menu_found = True
                     break
                 except:
                     continue
             
-            # Verificar contenido del menú
-            content_indicators = [
-                (By.LINK_TEXT, "Contenido"),
-                (By.PARTIAL_LINK_TEXT, "Conten"),
+            if not menu_found:
+                raise Exception("No se encontró el botón de menú")
+            
+            # 4. Verificar menú abierto
+            menu_items = [
+                (By.LINK_TEXT, "Contents"),
+                (By.PARTIAL_LINK_TEXT, "Cont"),
                 (By.CSS_SELECTOR, "#toc")
             ]
             
-            for indicator in content_indicators:
+            for by, selector in menu_items:
                 try:
-                    WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located(indicator))
+                    WebDriverWait(driver, 8).until(
+                        EC.presence_of_element_located((by, selector)))
                     self.take_screenshot(driver, "menu_opened")
-                    return  # Éxito
+                    return
                 except:
                     continue
             
-            raise Exception("No se pudo verificar la apertura del menú")
+            raise Exception("Menú no mostró contenido esperado")
             
         except Exception as e:
             self.take_screenshot(driver, "mobile_error")
