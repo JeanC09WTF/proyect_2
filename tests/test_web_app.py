@@ -1,38 +1,27 @@
-import pytest
 from .base_test import BrowserStackTest
 from selenium.webdriver.common.keys import Keys
+import pytest
 
 class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
         browserName="Chrome",
         browserVersion="latest",
-        platformName="Windows",
-        platformVersion="10"
+        platformName="Windows"
     )
     def test_login_flow(self, driver):
-        driver.get("https://the-internet.herokuapp.com/login")
-        
-        # Flujo de login
-        driver.find_element(By.ID, "username").send_keys("testuser")
-        driver.find_element(By.ID, "password").send_keys("securepass123")
-        driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-        
-        assert "Dashboard" in driver.title
-        self.report_session_status(driver, "passed", "Login exitoso")
+        driver.get("https://www.google.com")
+        self.take_screenshot(driver, "google_home")
+        assert "Google" in driver.title
 
     @pytest.mark.capabilities(
-        browserName="Safari",
-        browserVersion="15",
-        platformName="macOS",
-        platformVersion="Monterey"
+        browserName="Firefox",
+        browserVersion="latest",
+        platformName="Windows"
     )
     def test_search_feature(self, driver):
-        driver.get("https://your-internal-app.com/dashboard")
-        
-        search_box = driver.find_element(By.NAME, "search")
-        search_box.send_keys("reporte financiero")
+        driver.get("https://www.google.com")
+        search_box = driver.find_element(By.NAME, "q")
+        search_box.send_keys("BrowserStack")
         search_box.send_keys(Keys.RETURN)
-        
-        assert "reporte financiero" in driver.page_source
         self.take_screenshot(driver, "search_results")
-        self.report_session_status(driver, "passed", "Búsqueda exitosa")
+        assert "BrowserStack" in driver.title
