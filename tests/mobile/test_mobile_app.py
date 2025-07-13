@@ -1,5 +1,6 @@
 import pytest
-from ..base_test import BrowserStackTest
+from tests.base_test import BrowserStackTest  # Cambiado a import absoluta
+from selenium.webdriver.common.by import By
 
 class TestMobileApp(BrowserStackTest):
     @pytest.mark.capabilities(
@@ -10,10 +11,11 @@ class TestMobileApp(BrowserStackTest):
         realMobile="true"
     )
     def test_mobile_navigation(self, driver):
-        driver.get("https://the-internet.herokuapp.com/login")
+        """Prueba de navegación en dispositivo móvil"""
+        driver.get("https://m.wikipedia.org")
+        self.take_screenshot(driver, "mobile_home")
         
-        menu_button = driver.find_element(By.CSS_SELECTOR, ".mobile-menu")
+        menu_button = driver.find_element(By.CSS_SELECTOR, ".main-menu-button")
         menu_button.click()
         
-        assert driver.find_element(By.LINK_TEXT, "Configuración").is_displayed()
-        self.report_session_status(driver, "passed", "Navegación móvil exitosa")
+        assert driver.find_element(By.LINK_TEXT, "Contenido").is_displayed()
