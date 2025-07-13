@@ -9,9 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         test_file: [
-          'tests/test_web_app.py::TestWebApp::test_login_flow',
-          'tests/test_web_app.py::TestWebApp::test_search_feature',
-          'tests/mobile/test_mobile_app.py::TestMobileApp::test_mobile_navigation'
+          'tests/test_web_app.py',
+          'tests/mobile/test_mobile_app.py'
         ]
     
     steps:
@@ -29,19 +28,18 @@ jobs:
       
       - name: Create directories
         run: |
-          mkdir -p screenshots/${{ matrix.test_file }}
-          mkdir -p test-results/${{ matrix.test_file }}
+          mkdir -p test-results
+          mkdir -p screenshots
       
       - name: Run tests
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          SCREENSHOT_DIR: "screenshots/${{ matrix.test_file }}"
         run: |
-          # Convertir el nombre del test a formato de archivo seguro
-          TEST_FILE_NAME=$(echo "${{ matrix.test_file }}" | tr '/:' '___')
+          # Nombre seguro para el archivo de resultados
+          TEST_RESULT_FILE=$(echo "${{ matrix.test_file }}" | sed 's/[^a-zA-Z0-9]/_/g')
           pytest -v "${{ matrix.test_file }}" \
-            --junitxml="test-results/${{ matrix.test_file }}/results.xml"
+            --junitxml=test-results/${TEST_RESULT_FILE}_results.xml
       
       - name: Upload screenshots
         if: always()
