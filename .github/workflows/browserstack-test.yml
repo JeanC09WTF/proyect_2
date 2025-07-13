@@ -8,10 +8,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_file: [
-          'tests/test_web_app.py',
-          'tests/mobile/test_mobile_app.py'
-        ]
+        config:
+          - test_file: "tests/test_web_app.py"
+            artifact_suffix: "web"
+          - test_file: "tests/mobile/test_mobile_app.py"
+            artifact_suffix: "mobile"
     
     steps:
       - uses: actions/checkout@v4
@@ -28,22 +29,24 @@ jobs:
       
       - name: Create directories
         run: |
-          mkdir -p test-results
-          mkdir -p screenshots
+          mkdir -p test-results/${{ matrix.config.artifact_suffix }}
+          mkdir -p screenshots/${{ matrix.config.artifact_suffix }}
       
       - name: Run tests
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          SCREENSHOT_DIR: "screenshots/${{ matrix.config.artifact_suffix }}"
         run: |
-          pytest -v "${{ matrix.test_file }}" --junitxml=test-results/$(echo ${{ matrix.test_file }} | tr '/' '_').xml
+          pytest -v "${{ matrix.config.test_file }}" \
+            --junitxml=test-results/${{ matrix.config.artifact_suffix }}/results.xml
       
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-${{ github.run_id }}
-          path: screenshots/
+          name: screenshots-${{ matrix.config.artifact_suffix }}-${{ github.run_number }}
+          path: screenshots/${{ matrix.config.artifact_suffix }}
           retention-days: 3
           if-no-files-found: ignore
       
@@ -51,7 +54,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.run_id }}
-          path: test-results/
+          name: test-results-${{ matrix.config.artifact_suffix }}-${{ github.run_number }}
+          path: test-results/${{ matrix.config.artifact_suffix }}
           retention-days: 3
           if-no-files-found: ignore
