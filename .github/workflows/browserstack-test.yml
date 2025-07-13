@@ -8,10 +8,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_file: [
-          'tests/test_web_app.py',
-          'tests/mobile/test_mobile_app.py'
-        ]
+        config:
+          - test_file: "tests/test_web_app.py::TestWebApp::test_login_flow"
+            capabilities: '{"browserName": "Chrome", "browserVersion": "latest", "platformName": "Windows"}'
+          - test_file: "tests/test_web_app.py::TestWebApp::test_search_feature"
+            capabilities: '{"browserName": "Firefox", "browserVersion": "latest", "platformName": "Windows"}'
+          - test_file: "tests/mobile/test_mobile_app.py::TestMobileApp::test_mobile_navigation"
+            capabilities: '{"browserName": "chrome", "platformName": "android", "deviceName": "Samsung Galaxy S22"}'
     
     steps:
       - uses: actions/checkout@v4
@@ -31,21 +34,22 @@ jobs:
           mkdir -p test-results
           mkdir -p screenshots
       
-      - name: Run tests
+      - name: Run test
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          TEST_CAPABILITIES: ${{ matrix.capabilities }}
         run: |
-          # Nombre seguro para el archivo de resultados
-          TEST_RESULT_FILE=$(echo "${{ matrix.test_file }}" | sed 's/[^a-zA-Z0-9]/_/g')
-          pytest -v "${{ matrix.test_file }}" \
+          # Convertir el nombre del test a formato de archivo seguro
+          TEST_RESULT_FILE=$(echo "${{ matrix.config.test_file }}" | tr '/:' '_')
+          pytest -v "${{ matrix.config.test_file }}" \
             --junitxml=test-results/${TEST_RESULT_FILE}_results.xml
       
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-${{ github.run_id }}
+          name: screenshots-${{ github.run_id }}-${{ github.run_attempt }}
           path: screenshots/
           retention-days: 3
           if-no-files-found: ignore
@@ -54,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.run_id }}
+          name: test-results-${{ github.run_id }}-${{ github.run_attempt }}
           path: test-results/
           retention-days: 3
           if-no-files-found: ignore
