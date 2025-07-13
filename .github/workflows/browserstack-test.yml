@@ -6,6 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false  # Permite que otros tests continúen si uno falla
       matrix:
         test_file: [
           'tests/test_web_app.py::TestWebApp::test_login_flow',
@@ -14,10 +15,10 @@ jobs:
         ]
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       
@@ -34,18 +35,20 @@ jobs:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
-          pytest -v ${{ matrix.test_file }} --junitxml=test-results/${{ matrix.test_file }}.xml
+          pytest -v ${{ matrix.test_file }} --junitxml=test-results/${{ runner.os }}-$(echo ${{ matrix.test_file }} | sed 's/[^a-zA-Z0-9]/_/g').xml
       
       - name: Upload screenshots
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-screenshots
+          name: test-screenshots-${{ runner.os }}-${{ github.run_id }}
           path: screenshots/
+          retention-days: 5
       
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ runner.os }}-${{ github.run_id }}
           path: test-results/
+          retention-days: 5
