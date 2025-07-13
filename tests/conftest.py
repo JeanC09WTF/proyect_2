@@ -42,11 +42,13 @@ def driver(request):
     
     yield driver
     
-    # Reportar estado a BrowserStack sin depender de rep_call
+    # Reportar estado a BrowserStack
+    status = "failed"  # Por defecto asumimos fallo
     try:
-        status = "passed" if request.node.rep_call.passed else "failed"
-    except AttributeError:
-        status = "failed"  # Fallback seguro
+        if hasattr(request.node, "rep_call") and not request.node.rep_call.failed:
+            status = "passed"
+    except:
+        pass
     
     reason = "Test completed" if status == "passed" else "Test failed"
     driver.execute_script(
