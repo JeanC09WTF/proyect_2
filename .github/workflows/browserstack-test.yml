@@ -36,18 +36,18 @@ jobs:
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          SCREENSHOT_DIR: "screenshots/${{ matrix.test_file }}"
         run: |
           # Convertir el nombre del test a formato de archivo seguro
-          TEST_FILE_NAME=$(echo "${{ matrix.test_file }}" | sed 's/[^a-zA-Z0-9]/_/g')
+          TEST_FILE_NAME=$(echo "${{ matrix.test_file }}" | tr '/:' '___')
           pytest -v "${{ matrix.test_file }}" \
-            --junitxml=test-results/${{ matrix.test_file }}/results.xml \
-            --screenshot-dir=screenshots/${{ matrix.test_file }}
+            --junitxml="test-results/${{ matrix.test_file }}/results.xml"
       
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          name: screenshots-${{ github.run_id }}
           path: screenshots/
           retention-days: 3
           if-no-files-found: ignore
@@ -56,7 +56,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          name: test-results-${{ github.run_id }}
           path: test-results/
           retention-days: 3
           if-no-files-found: ignore
