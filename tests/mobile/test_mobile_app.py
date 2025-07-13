@@ -10,7 +10,7 @@ class TestMobileApp(BrowserStackTest):
         realMobile="true"
     )
     def test_mobile_navigation(self, driver):
-        driver.get("https://m.your-internal-app.com")
+        driver.get("https://the-internet.herokuapp.com/login")
         
         menu_button = driver.find_element(By.CSS_SELECTOR, ".mobile-menu")
         menu_button.click()
