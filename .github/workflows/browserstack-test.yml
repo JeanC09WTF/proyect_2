@@ -8,13 +8,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - test_file: "tests/test_web_app.py::TestWebApp::test_login_flow"
-            capabilities: '{"browserName": "Chrome", "browserVersion": "latest", "platformName": "Windows"}'
-          - test_file: "tests/test_web_app.py::TestWebApp::test_search_feature"
-            capabilities: '{"browserName": "Firefox", "browserVersion": "latest", "platformName": "Windows"}'
-          - test_file: "tests/mobile/test_mobile_app.py::TestMobileApp::test_mobile_navigation"
-            capabilities: '{"browserName": "chrome", "platformName": "android", "deviceName": "Samsung Galaxy S22"}'
+        test_file: [
+          'tests/test_web_app.py',
+          'tests/mobile/test_mobile_app.py'
+        ]
     
     steps:
       - uses: actions/checkout@v4
@@ -28,28 +25,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-xdist
+          pip install -e .
       
       - name: Create directories
         run: |
           mkdir -p test-results
           mkdir -p screenshots
       
-      - name: Run test
+      - name: Run tests
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          TEST_CAPABILITIES: ${{ matrix.capabilities }}
         run: |
           # Convertir el nombre del test a formato de archivo seguro
-          TEST_RESULT_FILE=$(echo "${{ matrix.config.test_file }}" | tr '/:' '_')
-          pytest -v "${{ matrix.config.test_file }}" \
+          TEST_RESULT_FILE=$(echo "${{ matrix.test_file }}" | tr '/' '_' | tr ':' '_')
+          pytest -v "${{ matrix.test_file }}" \
             --junitxml=test-results/${TEST_RESULT_FILE}_results.xml
       
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          name: screenshots-${{ github.run_number }}
           path: screenshots/
           retention-days: 3
           if-no-files-found: ignore
@@ -58,7 +55,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          name: test-results-${{ github.run_number }}
           path: test-results/
           retention-days: 3
           if-no-files-found: ignore
