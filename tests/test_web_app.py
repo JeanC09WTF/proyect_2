@@ -1,6 +1,7 @@
 import pytest
-from .base_test import BrowserStackTest
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from tests.base_test import BrowserStackTest
 
 class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
@@ -9,6 +10,7 @@ class TestWebApp(BrowserStackTest):
         platformName="Windows"
     )
     def test_login_flow(self, driver):
+        """Prueba de flujo de login"""
         driver.get("https://www.google.com")
         self.take_screenshot(driver, "google_home")
         assert "Google" in driver.title
@@ -19,6 +21,7 @@ class TestWebApp(BrowserStackTest):
         platformName="Windows"
     )
     def test_search_feature(self, driver):
+        """Prueba de función de búsqueda"""
         driver.get("https://www.google.com")
         search_box = driver.find_element(By.NAME, "q")
         search_box.send_keys("BrowserStack")
