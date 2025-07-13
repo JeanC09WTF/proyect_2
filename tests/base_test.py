@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import os
+from datetime import datetime
 import pytest
 
 class BrowserStackTest:
@@ -31,10 +32,21 @@ class BrowserStackTest:
         yield driver
         driver.quit()
 
-    def take_screenshot(self, driver, name):
-        driver.save_screenshot(f"screenshots/{name}.png")
+    def take_screenshot(self, driver, name=None):
+        """Toma un screenshot y lo guarda en el directorio correcto"""
+        screenshot_dir = os.environ.get("SCREENSHOT_DIR", "screenshots")
+        os.makedirs(screenshot_dir, exist_ok=True)
+        
+        if not name:
+            name = f"screenshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        filepath = os.path.join(screenshot_dir, f"{name}.png")
+        driver.save_screenshot(filepath)
+        return filepathe}.png")
 
     def report_session_status(self, driver, status, reason):
         driver.execute_script(
             f'browserstack_executor: {{"action": "setSessionStatus", "arguments": {{"status":"{status}", "reason": "{reason}"}}}}'
         )
+
+
