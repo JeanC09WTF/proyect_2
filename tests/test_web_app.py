@@ -10,7 +10,7 @@ class TestWebApp(BrowserStackTest):
         platformVersion="10"
     )
     def test_login_flow(self, driver):
-        driver.get("https://your-internal-app.com/login")
+        driver.get("https://the-internet.herokuapp.com/login")
         
         # Flujo de login
         driver.find_element(By.ID, "username").send_keys("testuser")
