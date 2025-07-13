@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false  # Permite que otros tests continúen si uno falla
+      fail-fast: false
       matrix:
         test_file: [
           'tests/test_web_app.py::TestWebApp::test_login_flow',
@@ -27,28 +27,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium pytest pytest-xdist
       
-      - name: Create screenshots directory
-        run: mkdir -p screenshots
+      - name: Create directories
+        run: |
+          mkdir -p screenshots/${{ matrix.test_file }}
+          mkdir -p test-results/${{ matrix.test_file }}
       
       - name: Run tests
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
-          pytest -v ${{ matrix.test_file }} --junitxml=test-results/${{ runner.os }}-$(echo ${{ matrix.test_file }} | sed 's/[^a-zA-Z0-9]/_/g').xml
+          # Convertir el nombre del test a formato de archivo seguro
+          TEST_FILE_NAME=$(echo "${{ matrix.test_file }}" | sed 's/[^a-zA-Z0-9]/_/g')
+          pytest -v "${{ matrix.test_file }}" \
+            --junitxml=test-results/${{ matrix.test_file }}/results.xml \
+            --screenshot-dir=screenshots/${{ matrix.test_file }}
       
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-screenshots-${{ runner.os }}-${{ github.run_id }}
+          name: screenshots-${{ github.run_id }}-${{ github.run_attempt }}
           path: screenshots/
-          retention-days: 5
+          retention-days: 3
+          if-no-files-found: ignore
       
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ runner.os }}-${{ github.run_id }}
+          name: test-results-${{ github.run_id }}-${{ github.run_attempt }}
           path: test-results/
-          retention-days: 5
+          retention-days: 3
+          if-no-files-found: ignore
