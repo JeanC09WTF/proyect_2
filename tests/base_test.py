@@ -1,6 +1,5 @@
-import pytest
-from datetime import datetime
 import os
+from datetime import datetime
 
 class BrowserStackTest:
     def take_screenshot(self, driver, name=None):
