@@ -3,7 +3,6 @@ from datetime import datetime
 
 class BrowserStackTest:
     def take_screenshot(self, driver, name=None):
-        """Toma un screenshot y lo guarda en el directorio correcto"""
         screenshot_dir = os.environ.get("SCREENSHOT_DIR", "screenshots")
         os.makedirs(screenshot_dir, exist_ok=True)
         
