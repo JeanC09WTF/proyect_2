@@ -4,7 +4,6 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 import os
 import pytest
-import json
 from datetime import datetime
 
 def pytest_configure(config):
@@ -15,7 +14,6 @@ def pytest_configure(config):
 class BrowserStackTest:
     @pytest.fixture(scope='function')
     def driver(self, request):
-        # Obtener capacidades del marcador pytest
         capabilities = request.node.get_closest_marker("capabilities").kwargs
         
         # Configuración de BrowserStack
@@ -26,29 +24,31 @@ class BrowserStackTest:
             "consoleLogs": "verbose"
         }
         
-        # Configurar opciones según el navegador
-        if capabilities.get("browserName", "").lower() == "chrome":
+        # Configuración para Selenium 4+
+        browser_name = capabilities.get("browserName", "").lower()
+        if browser_name == "chrome":
             options = ChromeOptions()
-        elif capabilities.get("browserName", "").lower() == "firefox":
+        elif browser_name == "firefox":
             options = FirefoxOptions()
         else:
             options = ChromeOptions()  # Default
-            
-        # Fusionar capacidades
+        
         capabilities["bstack:options"] = bstack_options
+        
         for key, value in capabilities.items():
             options.set_capability(key, value)
         
-        # Inicializar driver
         driver = webdriver.Remote(
             command_executor="https://hub-cloud.browserstack.com/wd/hub",
             options=options
         )
         
+        # Almacenar el driver para el reporte final
+        request.cls.driver = driver
         yield driver
         
         # Reportar estado a BrowserStack
-        status = "passed" if request.node.rep_call.passed else "failed"
+        status = "passed" if not request.node.rep_call.failed else "failed"
         reason = "Test completed" if status == "passed" else "Test failed"
         driver.execute_script(
             f'browserstack_executor: {{"action": "setSessionStatus", "arguments": {{"status":"{status}", "reason": "{reason}"}}}}'
