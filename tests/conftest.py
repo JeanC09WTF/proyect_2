@@ -13,7 +13,6 @@ def pytest_configure(config):
 def driver(request):
     capabilities = request.node.get_closest_marker("capabilities").kwargs
     
-    # Configuración de BrowserStack
     bstack_options = {
         "userName": os.environ.get("BROWSERSTACK_USERNAME"),
         "accessKey": os.environ.get("BROWSERSTACK_ACCESS_KEY"),
@@ -21,14 +20,13 @@ def driver(request):
         "consoleLogs": "verbose"
     }
     
-    # Configuración para Selenium 4+
     browser_name = capabilities.get("browserName", "").lower()
     if browser_name == "chrome":
         options = ChromeOptions()
     elif browser_name == "firefox":
         options = FirefoxOptions()
     else:
-        options = ChromeOptions()  # Default
+        options = ChromeOptions()
     
     capabilities["bstack:options"] = bstack_options
     
@@ -42,17 +40,15 @@ def driver(request):
     
     yield driver
     
-    # Reportar estado a BrowserStack
-    status = "failed"  # Por defecto asumimos fallo
+    status = "failed"
     try:
         if hasattr(request.node, "rep_call") and not request.node.rep_call.failed:
             status = "passed"
     except:
         pass
     
-    reason = "Test completed" if status == "passed" else "Test failed"
     driver.execute_script(
-        f'browserstack_executor: {{"action": "setSessionStatus", "arguments": {{"status":"{status}", "reason": "{reason}"}}}}'
+        f'browserstack_executor: {{"action": "setSessionStatus", "arguments": {{"status":"{status}", "reason": "Test completed"}}}}'
     )
     driver.quit()
 
