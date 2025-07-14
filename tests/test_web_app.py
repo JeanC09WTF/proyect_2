@@ -9,7 +9,7 @@ class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
         browserName="Chrome",
         browserVersion="latest",
-        platformName="Windows"
+        platformName="WINDOWS"
     )
     def test_login_flow(self, driver):
         try:
@@ -25,7 +25,7 @@ class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
         browserName="Firefox",
         browserVersion="latest",
-        platformName="Windows"
+        platformName="WINDOWS"
     )
     def test_search_feature(self, driver):
         """Prueba de función de búsqueda"""
@@ -69,7 +69,7 @@ class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
         browserName="Safari",
         browserVersion="15",
-        platformName="macOS Monterey",
+        platformName="MAC",
         name="Test UI Differences - Safari"
     )
     def test_ui_compatibility_safari(self, driver):
@@ -92,7 +92,7 @@ class TestWebApp(BrowserStackTest):
     @pytest.mark.capabilities(
         browserName="Chrome",
         browserVersion="latest",
-        platformName="macOS Monterey",
+        platformName="MAC",
         name="Test UI Baseline - Chrome"
     )
     def test_ui_baseline_chrome(self, driver):
