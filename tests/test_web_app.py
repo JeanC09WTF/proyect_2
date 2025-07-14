@@ -64,3 +64,50 @@ class TestWebApp(BrowserStackTest):
         except Exception as e:
             self.take_screenshot(driver, "search_error")
             raise e
+
+    # NUEVOS TESTS PARA DETECTAR DIFERENCIAS VISUALES
+    @pytest.mark.capabilities(
+        browserName="Safari",
+        browserVersion="15",
+        platformName="macOS Monterey",
+        name="Test UI Differences - Safari"
+    )
+    def test_ui_compatibility_safari(self, driver):
+        """Detecta diferencias visuales en Safari"""
+        try:
+            driver.get("https://www.google.com")
+            self.take_screenshot(driver, "safari_ui")
+            
+            # Ejemplo: Verificar estilos específicos
+            search_box = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.NAME, "q"))
+            )
+            font_size = search_box.value_of_css_property("font-size")
+            assert font_size == "16px", f"Tamaño de fuente incorrecto en Safari: {font_size}"
+            
+        except Exception as e:
+            self.take_screenshot(driver, "safari_ui_error")
+            raise e
+
+    @pytest.mark.capabilities(
+        browserName="Chrome",
+        browserVersion="latest",
+        platformName="macOS Monterey",
+        name="Test UI Baseline - Chrome"
+    )
+    def test_ui_baseline_chrome(self, driver):
+        """Establece línea base visual en Chrome"""
+        try:
+            driver.get("https://www.google.com")
+            self.take_screenshot(driver, "chrome_ui_baseline")
+            
+            # Mismas verificaciones que en Safari para comparar
+            search_box = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.NAME, "q"))
+            )
+            font_size = search_box.value_of_css_property("font-size")
+            assert font_size == "16px", f"Tamaño de fuente incorrecto en Chrome: {font_size}"
+            
+        except Exception as e:
+            self.take_screenshot(driver, "chrome_ui_error")
+            raise e
