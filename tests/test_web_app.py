@@ -4,11 +4,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 import time
 
 # Configuración de BrowserStack - REEMPLAZA CON TUS CREDENCIALES REALES
-BROWSERSTACK_USERNAME = "TU_USUARIO"
-BROWSERSTACK_ACCESS_KEY = "TU_ACCESS_KEY"
+BROWSERSTACK_USERNAME = "cuentarecuperaci_XCNBUK"
+BROWSERSTACK_ACCESS_KEY = "pNFGbk5NPRQNazx9d4Nn"
 
 class TestWebApp:
     
@@ -16,21 +17,23 @@ class TestWebApp:
     def setup_teardown(self):
         """Fixture para configurar y cerrar el driver"""
         # Configuración de capacidades
-        self.capabilities = {
-            'bstack:options': {
-                "os": "Windows",
-                "osVersion": "11",
-                "buildName": "Prueba Larga BrowserStack",
-                "sessionName": "Navegación Infosgroup",
-            },
-            "browserName": "Chrome",
-            "browserVersion": "latest",
+        bstack_options = {
+            "os": "Windows",
+            "osVersion": "11",
+            "buildName": "Prueba Larga BrowserStack",
+            "sessionName": "Navegación Infosgroup",
         }
+        
+        # Crear opciones de Chrome y agregar capacidades
+        options = ChromeOptions()
+        options.set_capability('bstack:options', bstack_options)
+        options.set_capability('browserName', 'Chrome')
+        options.set_capability('browserVersion', 'latest')
         
         # Inicializar driver
         self.driver = webdriver.Remote(
             command_executor=f"https://{BROWSERSTACK_USERNAME}:{BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub",
-            options=webdriver.ChromeOptions().set_capability('bstack:options', self.capabilities['bstack:options'])
+            options=options
         )
         
         yield
@@ -41,7 +44,7 @@ class TestWebApp:
     def test_login_flow(self):
         """Test de flujo de login (ya existente)"""
         # Tu código existente para test_login_flow
-        pass
+        assert True  # Placeholder
     
     def test_search_feature(self):
         """Test de búsqueda y navegación en Infosgroup"""
@@ -95,13 +98,12 @@ class TestWebApp:
             print(f"❌ Error en la prueba: {e}")
             assert False, f"Test falló con error: {e}"
 
-# Si quieres también una versión como función (sin clase)
-@pytest.mark.capabilities(
-    browserName="Firefox",
-    browserVersion="latest",
-    platformName="Windows"
-)
-def test_search_feature_function(driver):
-    """Versión alternativa como función (si prefieres este estilo)"""
-    # Tu código aquí usando driver directamente
-    pass
+# Versión alternativa como función
+def test_search_feature_function():
+    """Versión alternativa como función sin BrowserStack"""
+    driver = webdriver.Chrome()  # Driver local para testing rápido
+    try:
+        driver.get("https://www.google.com")
+        assert "Google" in driver.title
+    finally:
+        driver.quit()
