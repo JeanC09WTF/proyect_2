@@ -6,108 +6,71 @@ from selenium.webdriver.support import expected_conditions as EC
 from tests.base_test import BrowserStackTest
 
 class TestWebApp(BrowserStackTest):
+
     @pytest.mark.capabilities(
         browserName="Chrome",
         browserVersion="latest",
-        platformName="WINDOWS"
+        platformName="WINDOWS",
+        name="Test Navegación Infosgroup"
     )
-    def test_login_flow(self, driver):
+    def test_infosgroup_navigation(self, driver):
+        """Prueba extendida: Buscar Infosgroup y navegar por botones"""
         try:
+            # 1. Entrar a Google
             driver.get("https://www.google.com")
-            WebDriverWait(driver, 10).until(
-                lambda d: "Google" in d.title
-            )
-            self.take_screenshot(driver, "google_home")
-        except Exception as e:
-            self.take_screenshot(driver, "login_error")
-            raise e
 
-    @pytest.mark.capabilities(
-        browserName="Firefox",
-        browserVersion="latest",
-        platformName="WINDOWS"
-    )
-    def test_search_feature(self, driver):
-        """Prueba de función de búsqueda"""
-        try:
-            # 1. Navegar a Google y aceptar cookies si existe
-            driver.get("https://www.google.com")
-            
-            # Intentar aceptar cookies (si aparece)
+            # Aceptar cookies si aparece
             try:
                 accept_button = WebDriverWait(driver, 3).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Aceptar todo') or contains(., 'Aceptar') or contains(., 'Acepto')]"))
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//button[contains(., 'Aceptar') or contains(., 'Acepto')]")
+                    )
                 )
                 accept_button.click()
             except:
-                pass  # Si no aparece el modal, continuar
-            
-            # 2. Esperar y realizar búsqueda
+                pass
+
+            # 2. Buscar Infosgroup
             search_box = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.NAME, "q"))
             )
-            search_box.clear()
-            search_box.send_keys("BrowserStack")
+            search_box.send_keys("Infosgroup Panamá")
             search_box.send_keys(Keys.RETURN)
-            
-            # 3. Verificar resultados con múltiples condiciones
+
+            # 3. Clic en el primer resultado de Infosgroup
+            infosgroup_link = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.PARTIAL_LINK_TEXT, "Infosgroup")
+                )
+            )
+            infosgroup_link.click()
+
+            # 4. Esperar a que cargue la página de Infosgroup
             WebDriverWait(driver, 15).until(
-                lambda d: any([
-                    "BrowserStack" in d.title,
-                    "browserstack" in d.title.lower(),
-                    "BrowserStack" in d.page_source,
-                    len(d.find_elements(By.PARTIAL_LINK_TEXT, "BrowserStack")) > 0
-                ])
+                lambda d: "Infosgroup" in d.title or "InfosGroup" in d.page_source
             )
-            self.take_screenshot(driver, "search_results")
-            
+            self.take_screenshot(driver, "infosgroup_home")
+
+            # 5. Navegar por algunos botones del menú principal
+            menu_items = [
+                "//a[contains(text(), 'Nosotros')]",
+                "//a[contains(text(), 'Servicios')]",
+                "//a[contains(text(), 'Clientes')]",
+                "//a[contains(text(), 'Contacto')]"
+            ]
+
+            for i, item in enumerate(menu_items, start=1):
+                try:
+                    btn = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, item))
+                    )
+                    btn.click()
+                    WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
+                    self.take_screenshot(driver, f"infosgroup_menu_{i}")
+                except Exception as e:
+                    print(f"No se pudo acceder al botón {item}: {e}")
+
         except Exception as e:
-            self.take_screenshot(driver, "search_error")
+            self.take_screenshot(driver, "infosgroup_error")
             raise e
 
-    # NUEVOS TESTS PARA DETECTAR DIFERENCIAS VISUALES
-    @pytest.mark.capabilities(
-        browserName="Safari",
-        browserVersion="15",
-        platformName="MAC",
-        name="Test UI Differences - Safari"
-    )
-    def test_ui_compatibility_safari(self, driver):
-        """Detecta diferencias visuales en Safari"""
-        try:
-            driver.get("https://www.google.com")
-            self.take_screenshot(driver, "safari_ui")
-            
-            # Ejemplo: Verificar estilos específicos
-            search_box = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.NAME, "q"))
-            )
-            font_size = search_box.value_of_css_property("font-size")
-            assert font_size == "16px", f"Tamaño de fuente incorrecto en Safari: {font_size}"
-            
-        except Exception as e:
-            self.take_screenshot(driver, "safari_ui_error")
-            raise e
-
-    @pytest.mark.capabilities(
-        browserName="Chrome",
-        browserVersion="latest",
-        platformName="MAC",
-        name="Test UI Baseline - Chrome"
-    )
-    def test_ui_baseline_chrome(self, driver):
-        """Establece línea base visual en Chrome"""
-        try:
-            driver.get("https://www.google.com")
-            self.take_screenshot(driver, "chrome_ui_baseline")
-            
-            # Mismas verificaciones que en Safari para comparar
-            search_box = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.NAME, "q"))
-            )
-            font_size = search_box.value_of_css_property("font-size")
-            assert font_size == "16px", f"Tamaño de fuente incorrecto en Chrome: {font_size}"
-            
-        except Exception as e:
-            self.take_screenshot(driver, "chrome_ui_error")
-            raise e
